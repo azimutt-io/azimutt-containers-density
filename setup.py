@@ -11,20 +11,43 @@ Distributed under the MIT License (license terms are at http://opensource.org/li
 ---
 """
 
+import configparser
+import yaml
 import pip
 import os, sys
 from setuptools import setup, find_packages
 
 sys.path.insert(0, os.path.dirname(__file__))
 
-from packaging import CONFIGURATION
+SETUP_FILENAME = 'setup.yml'
+SECTION_NAME = 'azimutt-containers-density-package'
+
+configParser = configparser.RawConfigParser()
+configFilePath = os.path.join(os.path.dirname(os.path.abspath(__file__)), SETUP_FILENAME)
+configParser.read(configFilePath)
+
+def get_settings(filename):
+    """ Load settings from file.
+    
+    @param filename: The name of file containing settings.
+    """
+    with open(filename, 'r') as stream:
+    try:
+        return yaml.safe_load(stream)
+    except yaml.YAMLError as e:
+        raise IOError('Unable to parse {filename}: {exc}'.format(filename=filename, exception=e)  
+
+
+
+CONFIGURATION = dict()
+KEYS = ['name', 'version', 'author', 'email', 'copyright', 'credits', 'license', 'maintainer', 'status', 'description']
+
+for key in KEYS: CONFIGURATION[key.lower()] = configParser.get(SECTION_NAME, key)
 
 links = []
 requires = []
 
 requirements = pip.req.parse_requirements(os.path.join(os.path.dirname(__file__), 'requirements.txt'), session=pip.download.PipSession())
-
-download_url = 'https://github.com/azimutt-io/azimutt-containers-density/archive/v%s.tar.gz' % CONFIGURATION['version']
 
 for item in requirements:
     # we want to handle package names and also repo urls
